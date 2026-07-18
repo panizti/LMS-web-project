@@ -1,10 +1,9 @@
 import mongoose from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 
-// ─── اتصال به MongoDB ───────────────────────────────────────────
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/lms_db';
 
-// ─── Schema ها ──────────────────────────────────────────────────
+// Schemas
 const UserSchema = new mongoose.Schema({ username: String, password: String, role: String }, { timestamps: true });
 const CourseSchema = new mongoose.Schema({ title: String, code: String, teacherId: String, units: Number }, { timestamps: true });
 const EnrollmentSchema = new mongoose.Schema({ studentId: String, courseId: String }, { timestamps: true });
@@ -17,7 +16,6 @@ const Enrollment = mongoose.model('Enrollment', EnrollmentSchema);
 const Grade = mongoose.model('Grade', GradeSchema);
 const Profile = mongoose.model('Profile', ProfileSchema);
 
-// ─── داده‌های دروس مهندسی کامپیوتر ────────────────────────────
 const coursesData = [
   { title: 'برنامه‌نویسی پیشرفته', code: 'CS101', units: 3 },
   { title: 'ساختمان داده', code: 'CS102', units: 3 },
@@ -31,7 +29,6 @@ const coursesData = [
   { title: 'معماری کامپیوتر', code: 'CS110', units: 2 },
 ];
 
-// ─── داده‌های کاربران ───────────────────────────────────────────
 const teachersData = [
   { username: 'dr_ahmadi',   firstName: 'علی',      lastName: 'احمدی',    email: 'ahmadi@tabrizu.ac.ir',   phone: '09141111111' },
   { username: 'dr_hosseini', firstName: 'محمد',     lastName: 'حسینی',    email: 'hosseini@tabrizu.ac.ir', phone: '09142222222' },
@@ -52,10 +49,9 @@ const studentsData = [
   { username: 'student10', firstName: 'پانیذ',   lastName: 'اکبری',   email: 's10@student.tabrizu.ac.ir', phone: '09151111120', sid: '4011234010' },
 ];
 
-// ─── تابع اصلی Seed ────────────────────────────────────────────
 async function seed() {
   await mongoose.connect(MONGO_URI);
-  console.log('✅ اتصال به MongoDB برقرار شد');
+  console.log('اتصال به MongoDB برقرار شد');
 
   // پاک کردن داده‌های قبلی (به جز ادمین)
   await User.deleteMany({ role: { $in: ['teacher', 'student'] } });
@@ -63,43 +59,38 @@ async function seed() {
   await Enrollment.deleteMany({});
   await Grade.deleteMany({});
   await Profile.deleteMany({});
-  console.log('🗑️  داده‌های قبلی پاک شد');
+  console.log('داده‌های قبلی پاک شد');
 
   const salt = await bcrypt.genSalt(10);
   const defaultPassword = await bcrypt.hash('123456', salt);
 
-  // ─── ساخت اساتید ─────────────────────────────────────────────
   const teachers: any[] = [];
   for (const t of teachersData) {
     const user = await User.create({ username: t.username, password: defaultPassword, role: 'teacher' });
     await Profile.create({ firstName: t.firstName, lastName: t.lastName, email: t.email, phone: t.phone, userId: user._id });
     teachers.push(user);
-    console.log(`👨‍🏫 استاد ساخته شد: ${t.username} | رمز: 123456`);
+    console.log(`استاد ساخته شد: ${t.username} | رمز: 123456`);
   }
 
-  // ─── ساخت دروس و تخصیص به اساتید ────────────────────────────
   const courses: any[] = [];
   for (let i = 0; i < coursesData.length; i++) {
     const teacher = teachers[i % teachers.length];
     const course = await Course.create({ ...coursesData[i], teacherId: teacher._id.toString() });
     courses.push(course);
-    console.log(`📚 درس ساخته شد: ${coursesData[i].title} (${coursesData[i].code})`);
+    console.log(` درس ساخته شد: ${coursesData[i].title} (${coursesData[i].code})`);
   }
 
-  // ─── ساخت دانشجویان ──────────────────────────────────────────
   const students: any[] = [];
   for (const s of studentsData) {
     const user = await User.create({ username: s.username, password: defaultPassword, role: 'student' });
     await Profile.create({ firstName: s.firstName, lastName: s.lastName, email: s.email, phone: s.phone, userId: user._id });
     students.push(user);
-    console.log(`🎓 دانشجو ساخته شد: ${s.username} | رمز: 123456`);
+    console.log(`دانشجو ساخته شد: ${s.username} | رمز: 123456`);
   }
 
-  // ─── انتخاب واحد (هر دانشجو ۴ درس) ─────────────────────────
   const enrollments: any[] = [];
   for (let si = 0; si < students.length; si++) {
     const student = students[si];
-    // هر دانشجو از index خودش شروع می‌کنه تا تنوع داشته باشه
     const myCourses = [
       courses[si % courses.length],
       courses[(si + 1) % courses.length],
@@ -111,9 +102,8 @@ async function seed() {
       enrollments.push({ enrollment, student, course });
     }
   }
-  console.log(`📋 ${enrollments.length} انتخاب واحد ثبت شد`);
+  console.log(`${enrollments.length} انتخاب واحد ثبت شد`);
 
-  // ─── ثبت نمرات ───────────────────────────────────────────────
   const grades = [18.5, 17, 15.5, 19, 14, 16.5, 20, 13, 17.5, 12, 18, 15, 11.5, 16, 19.5, 14.5, 13.5, 17, 20, 16];
   let gradeIndex = 0;
   for (const { student, course } of enrollments) {
@@ -124,13 +114,12 @@ async function seed() {
     });
     gradeIndex++;
   }
-  console.log(`🎯 ${enrollments.length} نمره ثبت شد`);
+  console.log(` ${enrollments.length} نمره ثبت شد`);
 
-  // ─── خلاصه نهایی ─────────────────────────────────────────────
   console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('✅ Seed با موفقیت انجام شد!\n');
-  console.log('👤 اطلاعات ورود:');
-  console.log('   ادمین    → username: admin      | password: admin123');
+  console.log(' Seed با موفقیت انجام شد!\n');
+  console.log(' اطلاعات ورود:');
+  console.log('   ادمین    → username: admin      | password: 123456');
   console.log('   اساتید   → username: dr_ahmadi  | password: 123456');
   console.log('              username: dr_hosseini | password: 123456');
   console.log('              username: dr_karimi   | password: 123456');
@@ -143,6 +132,6 @@ async function seed() {
 }
 
 seed().catch(err => {
-  console.error('❌ خطا در Seed:', err);
+  console.error(' خطا در Seed:', err);
   process.exit(1);
 });
