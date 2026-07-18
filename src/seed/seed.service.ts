@@ -19,17 +19,15 @@ export class SeedService {
   ) {}
 
   async seed() {
-    console.log('🌱 شروع بارگذاری داده‌های تست...\n');
+    console.log('شروع بارگذاری داده‌های تست...\n');
 
-    // ─── ۱. پاک‌سازی داده‌های قبلی ───
     await this.userModel.deleteMany({});
     await this.courseModel.deleteMany({});
     await this.enrollmentModel.deleteMany({});
     await this.gradeModel.deleteMany({});
     await this.profileModel.deleteMany({});
-    console.log('✅ داده‌های قبلی پاک شدند\n');
+    console.log('داده‌های قبلی پاک شدند\n');
 
-    // ─── ۲. ساخت کاربران ───
     const password = await bcrypt.hash('123456', 10);
 
     const admin = await this.userModel.create({
@@ -55,12 +53,11 @@ export class SeedService {
       { username: 'niloofar_azizi', password, role: 'student' },
     ]);
 
-    console.log(`✅ کاربران ساخته شدند:`);
+    console.log(`کاربران ساخته شدند:`);
     console.log(`   - ۱ مدیر گروه (admin / 123456)`);
     console.log(`   - ${teachers.length} استاد (username / 123456)`);
     console.log(`   - ${students.length} دانشجو (username / 123456)\n`);
 
-    // ─── ۳. ساخت پروفایل ───
     await this.profileModel.insertMany([
       { userId: admin._id, firstName: 'محمد', lastName: 'احمدی', email: 'admin@tabrizu.ac.ir', phone: '041-33330001' },
       { userId: teachers[0]._id, firstName: 'رضا', lastName: 'احمدی', email: 'ahmadi@tabrizu.ac.ir', phone: '041-33331001' },
@@ -75,9 +72,8 @@ export class SeedService {
       { userId: students[6]._id, firstName: 'امیر', lastName: 'طاهری', email: 'amir.taheri@tabrizu.ac.ir', phone: '09141110007' },
       { userId: students[7]._id, firstName: 'نیلوفر', lastName: 'عزیزی', email: 'n.azizi@tabrizu.ac.ir', phone: '09141110008' },
     ]);
-    console.log('✅ پروفایل‌ها ساخته شدند\n');
+    console.log('پروفایل‌ها ساخته شدند\n');
 
-    // ─── ۴. ساخت دروس ───
     const courses = await this.courseModel.insertMany([
       { title: 'برنامه‌نویسی وب', code: 'WEB101', teacherId: teachers[0]._id.toString(), units: 3 },
       { title: 'پایگاه داده', code: 'DB201', teacherId: teachers[0]._id.toString(), units: 3 },
@@ -86,9 +82,8 @@ export class SeedService {
       { title: 'شبکه‌های کامپیوتری', code: 'NET301', teacherId: teachers[2]._id.toString(), units: 3 },
       { title: 'امنیت شبکه', code: 'SEC401', teacherId: teachers[2]._id.toString(), units: 3 },
     ]);
-    console.log(`✅ ${courses.length} درس ساخته شد\n`);
+    console.log(`${courses.length} درس ساخته شد\n`);
 
-    // ─── ۵. ثبت‌نام دروس ───
     const enrollmentsData = [
       // ali_rezai: 4 درس
       { studentId: students[0]._id.toString(), courseId: courses[0]._id.toString() },
@@ -122,9 +117,8 @@ export class SeedService {
       { studentId: students[7]._id.toString(), courseId: courses[4]._id.toString() },
     ];
     await this.enrollmentModel.insertMany(enrollmentsData);
-    console.log(`✅ ${enrollmentsData.length} ثبت‌نام انجام شد\n`);
+    console.log(`${enrollmentsData.length} ثبت‌نام انجام شد\n`);
 
-    // ─── ۶. ثبت نمرات ───
     const gradesData = [
       // ali_rezai
       { studentId: students[0]._id.toString(), courseId: courses[0]._id.toString(), grade: 17.5 },
@@ -151,21 +145,20 @@ export class SeedService {
       { studentId: students[7]._id.toString(), courseId: courses[3]._id.toString(), grade: 17 },
     ];
     await this.gradeModel.insertMany(gradesData);
-    console.log(`✅ ${gradesData.length} نمره ثبت شد\n`);
+    console.log(`${gradesData.length} نمره ثبت شد\n`);
 
-    // ─── خلاصه ───
     console.log('═══════════════════════════════════════════');
-    console.log('🎉 بارگذاری داده‌های تست با موفقیت انجام شد!');
+    console.log('بارگذاری داده‌های تست با موفقیت انجام شد!');
     console.log('═══════════════════════════════════════════');
-    console.log('\n📋 اطلاعات ورود:\n');
-    console.log('   🔑 مدیر گروه:');
-    console.log('      username: admin');
-    console.log('      password: 123456\n');
-    console.log('   🔑 اساتید:');
+    console.log('\nاطلاعات ورود:\n');
+    console.log('مدیر گروه:');
+    console.log('username: admin');
+    console.log('password: 123456\n');
+    console.log('اساتید:');
     teachers.forEach((t, i) => {
-      console.log(`      ${i + 1}. username: ${t.username} / password: 123456`);
+      console.log(`${i + 1}. username: ${t.username} / password: 123456`);
     });
-    console.log('\n   🔑 دانشجویان:');
+    console.log('\nدانشجویان:');
     students.forEach((s, i) => {
       console.log(`      ${i + 1}. username: ${s.username} / password: 123456`);
     });
