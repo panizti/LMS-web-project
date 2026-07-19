@@ -9,7 +9,6 @@ export class WorkflowsService {
     @InjectModel(WorkflowEntity.name) private workflowModel: Model<WorkflowEntity>,
   ) {}
 
-  /** ساخت workflow جدید (فقط ادمین) */
   async create(dto: any) {
     const exists = await this.workflowModel.findOne({ type: dto.type }).exec();
     if (exists) {
@@ -21,34 +20,29 @@ export class WorkflowsService {
     return { id: created._id.toString(), ...created.toJSON() };
   }
 
-  /** لیست همه workflowها */
   async findAll() {
     const list = await this.workflowModel.find().lean().exec();
     return list.map(w => ({ id: w._id.toString(), ...w }));
   }
 
-  /** جزئیات یک workflow */
   async findOne(id: string) {
     const w = await this.workflowModel.findById(id).lean().exec();
     if (!w) throw new NotFoundException('گردش کار یافت نشد');
     return { id: w._id.toString(), ...w };
   }
 
-  /** ویرایش workflow */
   async update(id: string, dto: any) {
     const w = await this.workflowModel.findByIdAndUpdate(id, dto, { new: true }).lean().exec();
     if (!w) throw new NotFoundException('گردش کار یافت نشد');
     return { id: w._id.toString(), ...w };
   }
 
-  /** حذف workflow */
   async remove(id: string) {
     const w = await this.workflowModel.findByIdAndDelete(id).exec();
     if (!w) throw new NotFoundException('گردش کار یافت نشد');
     return { success: true };
   }
 
-  /** ساخت چند workflow پیش‌فرض (برای seed) */
   async seedDefaults() {
     const defaults = [
       {
