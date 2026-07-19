@@ -15,7 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(config: ConfigService) {
     const secret = config.get<string>('JWT_SECRET');
     if (!secret) {
-      throw new Error('❌ JWT_SECRET is not defined! Please create a .env file in the backend root directory.');
+      throw new Error('JWT_SECRET is not defined! Please create a .env file in the backend root directory.');
     }
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -25,7 +25,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload) {
-    // هر چیزی که return بشه در req.user قرار می‌گیرد
     return {
       userId: payload.sub,
       id: payload.sub,
