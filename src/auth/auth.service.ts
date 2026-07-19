@@ -18,7 +18,6 @@ export class AuthService {
     private readonly config: ConfigService,
   ) {}
 
-  /** ثبت‌نام عمومی: role همیشه 'student' */
   async register(dto: RegisterDto) {
     const exist = await this.usersService.findByUsername(dto.username);
     if (exist) throw new BadRequestException('username already exists');
@@ -37,7 +36,6 @@ export class AuthService {
     );
   }
 
-  /** لاگین و دریافت توکن */
   async login(dto: LoginDto) {
     const user = await this.usersService.findByUsername(dto.username);
     if (!user) throw new UnauthorizedException('invalid credentials');
@@ -48,7 +46,6 @@ export class AuthService {
     return this.signToken(user._id.toString(), user.username, user.role);
   }
 
-  /** ساخت Access Token */
   private async signToken(sub: string, username: string, role: string) {
     const payload = { sub, username, role };
     const access_token = await this.jwt.signAsync(payload, {
